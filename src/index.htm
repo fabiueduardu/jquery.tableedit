@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>jquery.tableedit</title>   
+    <style>
+        .field-error > input,
+        .field-error > select,
+        .field-error > input[type=checkbox],
+        .field-error > input[type=radio]
+        {
+            border-color:red!important;
+        }
+
+       .msg-error
+        {
+           color:red!important;
+        }
+    </style>
+</head>
+<body>    
+   <div class="panel panel-default" id="example1">
+        <div class="panel-heading">Example 01 - Return JSON on save and show validate messages out table</div>
+        <div class="panel-body"></div>
+            <table class="table">
+                <tr>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>quantity</th>
+                    <th>price</th>
+                    <th>color</th>
+                    <th>gender</th>
+                    <th>status</th>
+                    <th>day</th>
+                    <th>action</th>
+                </tr>
+                <tr>
+                    <td data-id="id">1</td>
+                    <td data-edit="text" data-id="name" data-required="true"  data-required-msg="the name is required!" data-attr="maxlength=10">product 1</td>
+                    <td data-edit="text" data-id="quantity" data-required="true" data-attr="data-type=numeric|data-dialog=true">0</td>
+                    <td data-edit="text" data-id="price" >1.2</td>
+                    <td data-edit="select" data-id="color" data-list="#select|red|blue" data-required="true" data-attr="onchange=customOnChange(this)">blue</td>
+                    <td data-edit="radio" data-id="gender" data-list="man|woman" >woman</td>
+                    <td data-edit="checkbox" data-id="status" data-list="active">active</td>
+                    <td data-edit="checkbox" data-id="day" data-list="saturday|sunday|monday" data-required="true" data-required-msg="one color is required!">sunday|monday</td>
+                    <td>
+                            <a href=javascript:; data-edit class="btn btn-default">Edit </a>
+                            <a href=javascript:; data-save class="btn btn-primary">Save </a>
+                            <a href=javascript:; data-cancel class="btn btn-danger">Cancel </a>
+                    </td>
+                </tr>
+                  <tr>
+                    <td data-id="id">2</td>
+                    <td data-edit="text" data-id="name" data-required="true"  data-required-msg="the name is required!" data-attr="maxlength=10">product 2</td>
+                    <td data-edit="text" data-id="quantity" data-required="true" data-attr="data-type=numeric|data-dialog=true">0</td>
+                    <td data-edit="text" data-id="price" >1.2</td>
+                    <td data-edit="select" data-id="color" data-list="#select|red|blue" data-required="true" data-attr="onchange=customOnChange(this)">blue</td>
+                    <td data-edit="radio" data-id="gender" data-list="man|woman" >woman</td>
+                    <td data-edit="checkbox" data-id="status" data-list="active">active</td>
+                    <td data-edit="checkbox" data-id="day" data-list="saturday|sunday|monday" data-required="true" data-required-msg="one color is required!">sunday|monday</td>
+                    <td>
+                            <a href=javascript:; data-edit class="btn btn-default">Edit </a>
+                            <a href=javascript:; data-save class="btn btn-primary">Save </a>
+                            <a href=javascript:; data-cancel class="btn btn-danger">Cancel </a>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </div>
+
+<hr>
+ <div class="panel panel-default" id="example2">
+        <div class="panel-heading">Example 01 - Post JSON to url-post and show validate messages on table</div>
+        <div class="panel-body"></div>
+            <table class="table" data-url-post="http://www.mocky.io/v2/551b622259cfa7b7186e5bb7">
+                <tr>
+                    <th>username</th>
+                    <th>name</th>
+                    <th>age</th>
+					<th>gender</th>
+					<th>action</th>
+                </tr>
+                <tr>
+                    <td data-id="username">@fabi_uchoa</td>
+                    <td data-edit="text" data-id="name" data-required="true"  data-required-msg="the name is required!">Fabio Eduardo</td>
+                    <td data-edit="text" data-id="age" data-required="true" data-attr="data-type=numeric">29</td>
+                    <td data-edit="radio" data-id="gender" data-list="man|woman" >man</td>
+                    <td>
+                            <a href=javascript:; data-edit class="btn btn-default">Edit </a>
+                            <a href=javascript:; data-save class="btn btn-primary">Save </a>
+                            <a href=javascript:; data-cancel class="btn btn-danger">Cancel </a>
+                    </td>
+                </tr>      
+            </table>
+        </div>
+    </div>
+</body>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+    <script type="text/javascript" src="jquery.tableedit.js?V=33"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <script>
+    	function customOnChange(el) {
+    		alert('customOnChange:' + el.value);
+    		console.log(el);
+		}
+
+		function onlyNumber(){
+		   $(document).on('keypress','input[data-type=numeric]' ,function (e) {
+		        return !(e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57));
+		    });
+		}
+
+        $(function () {
+
+            var $example1 =$("#example1");
+            var $example2 =$("#example2");
+            var $example3 =$("#example3");
+
+			onlyNumber();
+
+            $example1.find('table').tableedit({
+                    OnSave : function(data){
+                        $example1.find('.panel-body').html('POST:' + JSON.stringify(data))
+                         console.log(data);
+                        return true;
+                    },
+                    onInvalidField: function(messages){
+                        alert(messages);
+                        console.log(messages);
+                    }
+            });  
+
+             $example2.find('table').tableedit({
+             		dataType: 'text',
+                    OnSaveSuccess : function(data){
+                        $example2.find('.panel-body').html('POST RESULT:' + JSON.stringify(data))
+                         console.log(data);
+                        return true;
+                    },
+                    OnSaveError : function(data , error){
+						$example2.find('.panel-body').html('POST RESULT ERROR:' + JSON.stringify(data) + ' Error:' + error)
+                         console.log(data);
+                         console.log(error);
+                    }
+            });   
+        });  
+    </script>
+</html>
