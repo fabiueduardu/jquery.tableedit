@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head>
     <title>jquery.tableedit</title>   
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
@@ -34,30 +34,15 @@
                     <th>day</th>
                     <th>action</th>
                 </tr>
-                <tr>
+                 <tr>
                     <td data-id="id">1</td>
-                    <td data-edit="text" data-id="name" data-required="true"  data-required-msg="the name is required!" data-attr="maxlength=10">product 1</td>
-                    <td data-edit="text" data-id="quantity" data-required="true" data-attr="data-type=numeric|data-dialog=true">0</td>
-                    <td data-edit="text" data-id="price" >1.2</td>
-                    <td data-edit="select" data-id="color" data-list="#select|red|blue" data-required="true" data-attr="onchange=customOnChange(this)">blue</td>
-                    <td data-edit="radio" data-id="gender" data-list="man|woman" >woman</td>
-                    <td data-edit="checkbox" data-id="status" data-list="active">active</td>
-                    <td data-edit="checkbox" data-id="day" data-list="saturday|sunday|monday" data-required="true" data-required-msg="one color is required!">sunday|monday</td>
-                    <td>
-                            <a href=javascript:; data-edit class="btn btn-default">Edit </a>
-                            <a href=javascript:; data-save class="btn btn-primary">Save </a>
-                            <a href=javascript:; data-cancel class="btn btn-danger">Cancel </a>
-                    </td>
-                </tr>
-                  <tr>
-                    <td data-id="id">2</td>
                     <td data-edit="text" data-id="name" data-required="true"  data-required-msg="the name is required!" data-attr="maxlength=10">product 2</td>
-                    <td data-edit="text" data-id="quantity" data-required="true" data-attr="data-type=numeric|data-dialog=true">0</td>
+                    <td data-edit="text" data-id="quantity" data-required="true" data-attr="[{value:'numeric', text:'data-type'},{value:'true', text:'data-dialog'}]">0</td>
                     <td data-edit="text" data-id="price" >1.2</td>
-                    <td data-edit="select" data-id="color" data-list="#select|red|blue" data-required="true" data-attr="onchange=customOnChange(this)">blue</td>
-                    <td data-edit="radio" data-id="gender" data-list="man|woman" >woman</td>
+                    <td data-edit="select" data-id="color" data-list="[{value:'', text:'select'},{value:'blue', text:'blue'},{value:'red', text:'red'}]" data-required="true" data-attr="[{text:'onchange',value:'customOnChange(this)'}]">blue</td>
+                    <td data-edit="radio" data-id="gender" data-list="ListGender" >woman</td>
                     <td data-edit="checkbox" data-id="status" data-list="active">active</td>
-                    <td data-edit="checkbox" data-id="day" data-list="saturday|sunday|monday" data-required="true" data-required-msg="one color is required!">sunday|monday</td>
+                    <td data-edit="checkbox" data-id="day" data-list="ListDays" data-required="true" data-required-msg="one color is required!">sunday|monday</td>
                     <td>
                             <a href=javascript:; data-edit class="btn btn-default">Edit </a>
                             <a href=javascript:; data-save class="btn btn-primary">Save </a>
@@ -79,13 +64,15 @@
                     <th>name</th>
                     <th>age</th>
 					<th>gender</th>
+                    <th>number</th>
 					<th>action</th>
                 </tr>
                 <tr>
                     <td data-id="username">@fabi_uchoa</td>
                     <td data-edit="text" data-id="name" data-required="true"  data-required-msg="the name is required!">Fabio Eduardo</td>
-                    <td data-edit="text" data-id="age" data-required="true" data-attr="data-type=numeric">29</td>
-                    <td data-edit="radio" data-id="gender" data-list="man|woman" >man</td>
+                    <td data-edit="text" data-id="age" data-required="true" data-attr="[{value:'numeric', text:'data-type'}]">29</td>
+                    <td data-edit="radio" data-id="gender" data-list="ListGender" >man</td>
+                    <td data-edit="select" data-id="number" data-list="ListNumbers" >1</td>
                     <td>
                             <a href=javascript:; data-edit class="btn btn-default">Edit </a>
                             <a href=javascript:; data-save class="btn btn-primary">Save </a>
@@ -93,6 +80,10 @@
                     </td>
                 </tr>      
             </table>
+        </div>
+        <div id="Load" class="alert alert-danger" style="display:none">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+              <span class="sr-only">Info:</span> Sending...
         </div>
     </div>
 </body>
@@ -110,11 +101,32 @@
 		    });
 		}
 
+        function ListDays(){            
+            return [{value:'sunday', text:'sunday'} 
+                    , {value:'monday', text:'monday'} 
+                    , {value:'saturday', text:'saturday'} ];
+        }
+
+        function ListYesNo(){            
+            return [{value:'yes', text:'yes'} , {value:'no', text:'no'} ];
+        }
+
+         function ListGender(){
+            return [{value:'man', text:'man'} , {value:'woman', text:'woman'} ];
+        }
+
+         function ListNumbers() {
+            var values = [];
+            for (var i = 0; i <= 100; i++)
+                values.push({ value: i, text: i });
+            return values;
+        }
+
         $(function () {
 
             var $example1 =$("#example1");
             var $example2 =$("#example2");
-            var $example3 =$("#example3");
+            var $load =$("#Load");
 
 			onlyNumber();
 
@@ -132,6 +144,13 @@
 
              $example2.find('table').tableedit({
              		dataType: 'text',
+                    OnbeforeSend:function(data){
+                        $load.show();
+                        console.log(data)
+                    },
+                    OnComplete:function(data){
+                        $load.fadeOut();
+                    },
                     OnSaveSuccess : function(data){
                         $example2.find('.panel-body').html('POST RESULT:' + JSON.stringify(data))
                          console.log(data);

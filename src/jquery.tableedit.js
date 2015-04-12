@@ -14,11 +14,16 @@
             edit: 'a[data-edit]',
             save: 'a[data-save]',
             cancel: 'a[data-cancel]',
-            errorFieldClass: 'field-error',
-            errorMsgClass: 'msg-error',
-            dataType:'json',
+            error: {
+                fieldClass: 'field-error',
+                msgClass: 'msg-error'
+            },
+            input: { cssClass: 'form-control' },
+            dataType: 'json',
             keyValueDelimiter: '|',
             onInvalidField: null,
+            OnbeforeSend:null,
+            OnComplete:null,
             OnSaveError: null,
             OnSaveSuccess: null,
             OnSave: function (data) {
@@ -30,21 +35,23 @@
                     data: data,
                     dataType: defaults.dataType,
                     async: false,
-                    error: function (data,error) {
-                        if (defaults.OnSaveError) defaults.OnSaveError(data , error);
+                    beforeSend:defaults.OnbeforeSend,
+                    complete:defaults.OnComplete,
+                    error: function (data, error) {
+                        if (defaults.OnSaveError) defaults.OnSaveError(data, error);
                         result = false;
                     },
-                    success: function (data) {                        
+                    success: function (data) {
                         if (defaults.OnSaveSuccess) defaults.OnSaveSuccess(data);
                         result = true;
-                    }                    
+                    }
                 });
                 return result;
             }
         };
         var model_input = {
-            text: '<input type=text/>',
-            select: '<select />',
+            text: '<input type=text  />',
+            select: '<select  />',
             select_option: '<option />'
         };
 
@@ -96,7 +103,7 @@
                 var $td = $(this);
                 var msg = $td.data('required-msg') || ($td.data('id') + ' is required!');
                 errors.push(msg);
-                if (!defaults.onInvalidField && $td.find('span.' + defaults.errorMsgClass).size() == 0) $td.append('<span class=' + defaults.errorMsgClass + '>' + msg + '</span>');
+                if (!defaults.onInvalidField && $td.find('span.' + defaults.error.msgClass).size() == 0) $td.append('<span class=' + defaults.error.msgClass + '>' + msg + '</span>');
             });
 
             if (errors.length == 0)
@@ -121,16 +128,17 @@
             var data_attr = $td.data('attr');
             switch (type) {
                 case 'text':
-                    var $m = $(model_input.text);
+                    var $m = $(model_input.text).addClass(defaults.input.cssClass);
                     $td.html($m.val($td.text()));
                     break;
                 case 'select':
-                    var $m = $(model_input.select);
+                    var $m = $(model_input.select).addClass(defaults.input.cssClass);
                     var td_text = $td.text().trim();
                     $(getList($td.data('list'))).each(function (i, v) {
                         $m.append($(model_input.select_option).attr('value', v.value).text(v.text));
                     });
-                    if (td_text != '') $m.find('option:contains(' + td_text + ')').attr('selected', 'selected')
+                    if (td_text != '') 
+                        $m.find('option').filter(function(i) { return $(this).text() == td_text; }).attr('selected', 'selected');
                     $td.html($m);
                     break;
                 case 'radio':
@@ -145,14 +153,11 @@
                     break;
             }
 
-            $(getList($td.data('attr'))).each(function (i, v) {
-                var value = v.value.split('=');
-                $td.find('input,select').attr(value[0],value[1]);
-            });
+            $(getList($td.data('attr'))).each(function (i, v) {  $td.find('input,select').attr(v.text, v.value); });
         }
 
         var getValueTD = function ($td, type) {
-            var value = {value:'',text:''};
+            var value = { value: '', text: '' };
             switch (type) {
                 case 'text':
                     value.value = value.text = $td.find('input').val();
@@ -175,25 +180,19 @@
         }
 
         var getList = function (value) {
-            if(!value) return;
-            var values = [];
-            $(value.split(defaults.keyValueDelimiter)).each(function (i, v) {
-                var d_v = v.indexOf('#');
-                var value = v;
-                if (d_v != -1) { value = v.substring(0, d_v), v = v.substring(d_v + 1, v.length) };
-                values.push({ value: value, text: v })
-            });
-            return values;
+            if (!value) return;  
+            else if(value.indexOf('[')==0) return eval(value);
+            else if(window[value]) return window[value].call();
         }
 
         var isValid = function ($td, value) {
             var isValid = !($td.data('required') && value == '');
             $td.attr('data-isvalid', isValid);
             if (!isValid)
-                $td.addClass(defaults.errorFieldClass);
+                $td.addClass(defaults.error.fieldClass);
             else {
-                $td.removeClass(defaults.errorFieldClass);
-                $td.find('span.' + defaults.errorMsgClass).remove();
+                $td.removeClass(defaults.error.fieldClass);
+                $td.find('span.' + defaults.error.msgClass).remove();
             }
             return isValid;
         }
